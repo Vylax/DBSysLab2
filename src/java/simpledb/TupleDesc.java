@@ -46,6 +46,7 @@ public class TupleDesc implements Serializable {
     }
 
     private static final long serialVersionUID = 1L;
+    TDItem[] TDItems;
 
     /**
      * Create a new TupleDesc with typeAr.length fields with fields of the
@@ -58,8 +59,12 @@ public class TupleDesc implements Serializable {
      *            array specifying the names of the fields. Note that names may
      *            be null.
      */
-    public TupleDesc(Type[] typeAr, String[] fieldAr) {
-        // some code goes here
+    public TupleDesc(Type[] typeAr, String[] fieldAr) {//CHANGES
+    	TDItems = new TDItem[typeAr.length];
+    	
+    	for (int i=0; i < TDItems.length; i++) {
+    		TDItems[i] = new TDItem(typeAr[i],fieldAr[i]);
+    	}
     }
 
     /**
@@ -70,16 +75,15 @@ public class TupleDesc implements Serializable {
      *            array specifying the number of and types of fields in this
      *            TupleDesc. It must contain at least one entry.
      */
-    public TupleDesc(Type[] typeAr) {
-        // some code goes here
+    public TupleDesc(Type[] typeAr) {//CHANGES
+    	new TupleDesc(typeAr, new String[typeAr.length]);
     }
 
     /**
      * @return the number of fields in this TupleDesc
      */
-    public int numFields() {
-        // some code goes here
-        return 0;
+    public int numFields() {//CHANGES
+        return TDItems.length;
     }
 
     /**
@@ -91,9 +95,11 @@ public class TupleDesc implements Serializable {
      * @throws NoSuchElementException
      *             if i is not a valid field reference.
      */
-    public String getFieldName(int i) throws NoSuchElementException {
-        // some code goes here
-        return null;
+    public String getFieldName(int i) throws NoSuchElementException {//CHANGES
+    	if(i < 0 || i >= numFields()) {
+    		throw new NoSuchElementException("Index out of Range!");
+    	}
+        return TDItems[i].fieldName;
     }
 
     /**
@@ -106,9 +112,11 @@ public class TupleDesc implements Serializable {
      * @throws NoSuchElementException
      *             if i is not a valid field reference.
      */
-    public Type getFieldType(int i) throws NoSuchElementException {
-        // some code goes here
-        return null;
+    public Type getFieldType(int i) throws NoSuchElementException {//CHANGES
+    	if(i < 0 || i >= numFields()) {
+    		throw new NoSuchElementException("Index out of Range!");
+    	}
+        return TDItems[i].fieldType;
     }
 
     /**
@@ -120,17 +128,21 @@ public class TupleDesc implements Serializable {
      * @throws NoSuchElementException
      *             if no field with a matching name is found.
      */
-    public int fieldNameToIndex(String name) throws NoSuchElementException {
-        // some code goes here
-        return 0;
+    public int fieldNameToIndex(String name) throws NoSuchElementException {//CHANGES
+    	for (int i=0; i < numFields(); i++) {
+    		if(name == getFieldName(i)) {
+    			return i;
+    		}
+    	}
+    	
+    	throw new NoSuchElementException("No field named "+name+" in TupleDesc!");
     }
 
     /**
      * @return The size (in bytes) of tuples corresponding to this TupleDesc.
      *         Note that tuples from a given TupleDesc are of a fixed size.
      */
-    public int getSize() {
-        // some code goes here
+    public int getSize() {//CHANGES
         return 0;
     }
 
