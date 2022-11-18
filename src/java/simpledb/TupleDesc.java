@@ -41,7 +41,7 @@ public class TupleDesc implements Serializable {
      *        that are included in this TupleDesc
      * */
     public Iterator<TDItem> iterator() {//CHANGES
-        return ((ArrayList<TDItem>)Arrays.asList(TDItems)).iterator();
+        return Arrays.asList(TDItems).iterator();
     }
 
     private static final long serialVersionUID = 1L;
@@ -75,7 +75,11 @@ public class TupleDesc implements Serializable {
      *            TupleDesc. It must contain at least one entry.
      */
     public TupleDesc(Type[] typeAr) {//CHANGES
-    	new TupleDesc(typeAr, new String[typeAr.length]);
+    	TDItems = new TDItem[typeAr.length];
+    	
+    	for (int i=0; i < TDItems.length; i++) {
+    		TDItems[i] = new TDItem(typeAr[i],null);
+    	}
     }
     
     public TupleDesc(TDItem[] TDItems) {//CHANGES
@@ -133,12 +137,13 @@ public class TupleDesc implements Serializable {
      */
     public int fieldNameToIndex(String name) throws NoSuchElementException {//CHANGES
     	for (int i=0; i < numFields(); i++) {
+    		Debug.log("aaaaaaaa"+name+" "+getFieldName(i)+" "+i);
     		if(name == getFieldName(i)) {
     			return i;
     		}
     	}
-    	
-    	throw new NoSuchElementException("No field named "+name+" in TupleDesc!");
+    	return -1;
+    	//throw new NoSuchElementException("No field named "+name+" in TupleDesc!");
     }
 
     /**
@@ -146,10 +151,10 @@ public class TupleDesc implements Serializable {
      *         Note that tuples from a given TupleDesc are of a fixed size.
      */
     public int getSize() {//CHANGES
-    	ArrayList<TDItem> temp = (ArrayList<TDItem>) Arrays.asList(TDItems);
+    	List<TDItem> temp = Arrays.asList(TDItems);
     	int sum=0;
     	for(int i=0; i<this.numFields();i++) {
-    		sum += temp.get(i).fieldType.getLen() + Type.STRING_LEN;//TODO is this right ? I'm not sure about the description of the method
+    		sum += temp.get(i).fieldType.getLen() /*+ Type.STRING_LEN*/;//TODO is this right ? I'm not sure about the description of the method
     	}
         return sum;
     }
