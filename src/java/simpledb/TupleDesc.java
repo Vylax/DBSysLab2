@@ -137,13 +137,17 @@ public class TupleDesc implements Serializable {
      */
     public int fieldNameToIndex(String name) throws NoSuchElementException {//CHANGES
     	for (int i=0; i < numFields(); i++) {
-    		Debug.log("aaaaaaaa"+name+" "+getFieldName(i)+" "+i);
-    		if(name == getFieldName(i)) {
+    		if(name==null || getFieldName(i)==null) {
+    			if(name==getFieldName(i)) {
+    				return i;
+    			}
+    		}
+    		else if(name.equals(getFieldName(i))) {
     			return i;
     		}
     	}
-    	return -1;
-    	//throw new NoSuchElementException("No field named "+name+" in TupleDesc!");
+    	
+    	throw new NoSuchElementException("No field named "+name+" in TupleDesc!");
     }
 
     /**
@@ -197,6 +201,9 @@ public class TupleDesc implements Serializable {
     }
     
     public boolean equals(TupleDesc td) {//CHANGES
+    	if(td == null || this == null) {
+    		return td==this;
+    	}
         if(this.numFields() != td.numFields()) {
         	return false;
         }
