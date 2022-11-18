@@ -40,9 +40,8 @@ public class TupleDesc implements Serializable {
      *        An iterator which iterates over all the field TDItems
      *        that are included in this TupleDesc
      * */
-    public Iterator<TDItem> iterator() {
-        // some code goes here
-        return null;
+    public Iterator<TDItem> iterator() {//CHANGES
+        return ((ArrayList<TDItem>)Arrays.asList(TDItems)).iterator();
     }
 
     private static final long serialVersionUID = 1L;
@@ -77,6 +76,10 @@ public class TupleDesc implements Serializable {
      */
     public TupleDesc(Type[] typeAr) {//CHANGES
     	new TupleDesc(typeAr, new String[typeAr.length]);
+    }
+    
+    public TupleDesc(TDItem[] TDItems) {//CHANGES
+    	this.TDItems = TDItems;
     }
 
     /**
@@ -143,7 +146,12 @@ public class TupleDesc implements Serializable {
      *         Note that tuples from a given TupleDesc are of a fixed size.
      */
     public int getSize() {//CHANGES
-        return 0;
+    	ArrayList<TDItem> temp = (ArrayList<TDItem>) Arrays.asList(TDItems);
+    	int sum=0;
+    	for(int i=0; i<this.numFields();i++) {
+    		sum += temp.get(i).fieldType.getLen() + Type.STRING_LEN;//TODO is this right ? I'm not sure about the description of the method
+    	}
+        return sum;
     }
 
     /**
@@ -156,9 +164,16 @@ public class TupleDesc implements Serializable {
      *            The TupleDesc with the last fields of the TupleDesc
      * @return the new TupleDesc
      */
-    public static TupleDesc merge(TupleDesc td1, TupleDesc td2) {
-        // some code goes here
-        return null;
+    public static TupleDesc merge(TupleDesc td1, TupleDesc td2) {//CHANGES
+    	TDItem[] newTD = new TDItem[td1.numFields()+td2.numFields()];
+
+    	Iterator<TDItem> it1 = td1.iterator();
+    	Iterator<TDItem> it2 = td2.iterator();
+    	
+    	for(int i=0; i<newTD.length; i++) {
+    		newTD[i] = i < td1.numFields() ? it1.next() : it2.next();
+    	}
+        return new TupleDesc(newTD);
     }
 
     /**
@@ -172,9 +187,20 @@ public class TupleDesc implements Serializable {
      * @return true if the object is equal to this TupleDesc.
      */
 
-    public boolean equals(Object o) {
-        // some code goes here
-        return false;
+    public boolean equals(Object o) {//CHANGES
+        return this == o;
+    }
+    
+    public boolean equals(TupleDesc td) {//CHANGES
+        if(this.numFields() != td.numFields()) {
+        	return false;
+        }
+        boolean temp = true;
+        
+        for(int i=0;i<this.numFields();i++) {
+        	temp &= this.getFieldType(i)==td.getFieldType(i);
+        }
+        return temp;
     }
 
     public int hashCode() {
@@ -191,7 +217,10 @@ public class TupleDesc implements Serializable {
      * @return String describing this descriptor.
      */
     public String toString() {
-        // some code goes here
-        return "";
+        String temp = "";
+        for(int i=0;i<TDItems.length; i++) {
+        	temp += String.format("%s(%s)", TDItems[i].fieldType, (TDItems[i].fieldName != null ? TDItems[i].fieldName : "")) + (i<TDItems.length-1 ? ", " : "");
+        }
+        return temp;
     }
 }
