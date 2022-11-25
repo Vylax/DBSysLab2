@@ -26,6 +26,8 @@ public class Tuple implements Serializable {
      *            instance with at least one field.
      */
     public Tuple(TupleDesc td) {
+    	if(td == null || td.numFields() == 0) return;
+    	
         TD = td;
         Fields = new Field[td.numFields()];
     }
