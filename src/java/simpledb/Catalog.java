@@ -18,12 +18,33 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class Catalog {
 
+    //CHANGES
+    public class Table {
+        String name;
+        DbFile file;
+        String pkeyField;
+
+        public Table(DbFile file, String name, String pkeyField){
+            if(name==null) throw new UnsupportedOperationException("Table name may not be null");
+            this.name = name;
+            this.file = file;
+            this.pkeyField = pkeyField;
+        }
+
+        public String getName() { return this.name; }
+        public DbFile getFile() { return this.file; }
+        public String getPKeyField() { return this.pkeyField; }
+        public TupleDesc getSchema() { return this.file.getTupleDesc(); }
+        public int getId() { return this.file.getId(); }
+    }
+    Map<Integer, Table> tables;
+
     /**
      * Constructor.
      * Creates a new, empty catalog.
      */
-    public Catalog() {
-        // some code goes here
+    public Catalog() {//CHANGES
+        tables = new HashMap<Integer, Table>();
     }
 
     /**
@@ -35,8 +56,9 @@ public class Catalog {
      * conflict exists, use the last table to be added as the table for a given name.
      * @param pkeyField the name of the primary key field
      */
-    public void addTable(DbFile file, String name, String pkeyField) {
-        // some code goes here
+    public void addTable(DbFile file, String name, String pkeyField) {//CHANGES
+        Table newTable = new Table(file, name, pkeyField);
+        tables.put(newTable.getId(),newTable);
     }
 
     public void addTable(DbFile file, String name) {
@@ -58,9 +80,13 @@ public class Catalog {
      * Return the id of the table with a specified name,
      * @throws NoSuchElementException if the table doesn't exist
      */
-    public int getTableId(String name) throws NoSuchElementException {
-        // some code goes here
-        return 0;
+    public int getTableId(String name) throws NoSuchElementException {//CHANGES
+        int id = -1;//ensure we use the last table with the given name, as specified in the addTable method description
+        for(Integer TableId : tables.keySet()){
+            if(tables.get(TableId).name==name) id=TableId;
+        }
+        if(id >= 0) return id;
+        throw new NoSuchElementException(String.format("There is no table called \"%s\" in the catalog", name));
     }
 
     /**
@@ -69,9 +95,8 @@ public class Catalog {
      *     function passed to addTable
      * @throws NoSuchElementException if the table doesn't exist
      */
-    public TupleDesc getTupleDesc(int tableid) throws NoSuchElementException {
-        // some code goes here
-        return null;
+    public TupleDesc getTupleDesc(int tableid) throws NoSuchElementException {//CHANGES
+        return tables.get(tableid).getSchema();
     }
 
     /**
@@ -80,29 +105,25 @@ public class Catalog {
      * @param tableid The id of the table, as specified by the DbFile.getId()
      *     function passed to addTable
      */
-    public DbFile getDatabaseFile(int tableid) throws NoSuchElementException {
-        // some code goes here
-        return null;
+    public DbFile getDatabaseFile(int tableid) throws NoSuchElementException {//CHANGES
+        return tables.get(tableid).getFile();
     }
 
-    public String getPrimaryKey(int tableid) {
-        // some code goes here
-        return null;
+    public String getPrimaryKey(int tableid) {//CHANGES
+        return tables.get(tableid).getPKeyField();
     }
 
-    public Iterator<Integer> tableIdIterator() {
-        // some code goes here
-        return null;
+    public Iterator<Integer> tableIdIterator() {//CHANGES
+        return tables.keySet().iterator();
     }
 
-    public String getTableName(int id) {
-        // some code goes here
-        return null;
+    public String getTableName(int id) {//CHANGES
+        return tables.get(id).getName();
     }
     
     /** Delete all tables from the catalog */
-    public void clear() {
-        // some code goes here
+    public void clear() {//CHANGES
+        tables = new HashMap<Integer, Table>();
     }
     
     /**

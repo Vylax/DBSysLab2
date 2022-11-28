@@ -231,7 +231,7 @@ public class TupleDesc implements Serializable {
     public String toString() {//CHANGES
         String temp = "";
         for(int i=0;i<TDItems.length; i++) {
-        	temp += String.format("%s(%s)", TDItems[i].fieldType, (TDItems[i].fieldName != null ? TDItems[i].fieldName : "")) + (i<TDItems.length-1 ? ", " : "");
+        	temp += TDItems[i].toString() + (i<TDItems.length-1 ? ", " : "");
         }
         return temp;
     }
