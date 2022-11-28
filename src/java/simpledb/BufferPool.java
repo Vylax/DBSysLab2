@@ -26,13 +26,16 @@ public class BufferPool {
     constructor instead. */
     public static final int DEFAULT_PAGES = 50;
 
+    //CHANGES
+    Page[] bufferPool;
+
     /**
      * Creates a BufferPool that caches up to numPages pages.
      *
      * @param numPages maximum number of pages in this buffer pool.
      */
-    public BufferPool(int numPages) {
-        // some code goes here
+    public BufferPool(int numPages) {//CHANGES
+        bufferPool = new Page[numPages];
     }
     
     public static int getPageSize() {
@@ -65,9 +68,17 @@ public class BufferPool {
      * @param perm the requested permissions on the page
      */
     public  Page getPage(TransactionId tid, PageId pid, Permissions perm)
-        throws TransactionAbortedException, DbException {
-        // some code goes here
-        return null;
+        throws TransactionAbortedException, DbException {//CHANGES
+        int firstFreeSlot = -1;
+        for(int i=0; i<bufferPool.length; i++){
+            if(bufferPool[i].getId()==pid) return bufferPool[i];
+            if(firstFreeSlot<0 && bufferPool[i]==null) firstFreeSlot=i;
+        }
+        if(firstFreeSlot>=0){
+            bufferPool[firstFreeSlot] = Database.getCatalog().getDatabaseFile(pid.getTableId()).readPage(pid);//get page with the given pid
+            return bufferPool[firstFreeSlot];
+        }
+        throw new DbException("Buffer Pool is full");
     }
 
     /**
