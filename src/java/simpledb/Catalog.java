@@ -82,10 +82,14 @@ public class Catalog {
      */
     public int getTableId(String name) throws NoSuchElementException {//CHANGES
         int id = -1;//ensure we use the last table with the given name, as specified in the addTable method description
+        boolean foundId = false;
         for(Integer TableId : tables.keySet()){
-            if(tables.get(TableId).name==name) id=TableId;
+            if(tables.get(TableId).name==name) {
+            	id=TableId;
+            	foundId = true;
+            }
         }
-        if(id >= 0) return id;
+        if(foundId) return id;
         throw new NoSuchElementException(String.format("There is no table called \"%s\" in the catalog", name));
     }
 
