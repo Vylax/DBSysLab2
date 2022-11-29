@@ -197,7 +197,7 @@ public class TupleDesc implements Serializable {
      */
 
     public boolean equals(Object o) {//CHANGES
-        return this == o;
+        return o instanceof TupleDesc ? this.equals((TupleDesc)o) : false;
     }
     
     public boolean equals(TupleDesc td) {//CHANGES
