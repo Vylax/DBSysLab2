@@ -3,6 +3,8 @@ package simpledb;
 /** Unique identifier for HeapPage objects. */
 public class HeapPageId implements PageId {
 
+    //CHANGES
+    int[] pid;
     /**
      * Constructor. Create a page id structure for a specific page of a
      * specific table.
@@ -10,23 +12,21 @@ public class HeapPageId implements PageId {
      * @param tableId The table that is being referenced
      * @param pgNo The page number in that table.
      */
-    public HeapPageId(int tableId, int pgNo) {
-        // some code goes here
+    public HeapPageId(int tableId, int pgNo) {//CHANGES
+        pid = new int[] {tableId, pgNo, Integer.parseInt(tableId + "" + pgNo)};
     }
 
     /** @return the table associated with this PageId */
-    public int getTableId() {
-        // some code goes here
-        return 0;
+    public int getTableId() {//CHANGES
+        return pid[0];
     }
 
     /**
      * @return the page number in the table getTableId() associated with
      *   this PageId
      */
-    public int getPageNumber() {
-        // some code goes here
-        return 0;
+    public int getPageNumber() {//CHANGES
+        return pid[1];
     }
 
     /**
@@ -35,9 +35,8 @@ public class HeapPageId implements PageId {
      *   key in a hash table in the BufferPool, for example.)
      * @see BufferPool
      */
-    public int hashCode() {
-        // some code goes here
-        throw new UnsupportedOperationException("implement this");
+    public int hashCode() {//CHANGES
+        return pid[2];
     }
 
     /**
@@ -47,9 +46,12 @@ public class HeapPageId implements PageId {
      * @return true if the objects are equal (e.g., page numbers and table
      *   ids are the same)
      */
-    public boolean equals(Object o) {
-        // some code goes here
-        return false;
+    public boolean equals(Object o) {//CHANGES
+        return o instanceof PageId && this.equals((PageId)o);
+    }
+
+    public boolean equals(PageId pid) {//CHANGES
+        return pid.getPageNumber()==this.getPageNumber() && pid.getTableId()==this.getTableId();
     }
 
     /**
