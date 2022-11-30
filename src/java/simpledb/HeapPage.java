@@ -65,9 +65,8 @@ public class HeapPage implements Page {
     /** Retrieve the number of tuples on this page.
         @return the number of tuples on this page
     */
-    private int getNumTuples() {        
-        // some code goes here
-        return 0;
+    private int getNumTuples() { //CHANGES
+        return tuples.length;
 
     }
 
@@ -75,11 +74,16 @@ public class HeapPage implements Page {
      * Computes the number of bytes in the header of a page in a HeapFile with each tuple occupying tupleSize bytes
      * @return the number of bytes in the header of a page in a HeapFile with each tuple occupying tupleSize bytes
      */
-    private int getHeaderSize() {        
-        
-        // some code goes here
-        return 0;
-                 
+    private int getHeaderSize() { //CHANGES    
+        int pageSize = Database.getBufferPool().getPageSize(); 
+        int tupleSize = td.getSize()/getNumTuples();//TODO: make sure this is right
+        int tuplesPerPage = pageSize / (tupleSize * 8 + 1);
+        return divisionCeil(tuplesPerPage,8);
+    }
+
+    //CHANGES
+    private int divisionCeil(int a, int b){
+        return a / b + ((a % b == 0) ? 0 : 1);
     }
     
     /** Return a view of this page before it was modified
@@ -110,9 +114,8 @@ public class HeapPage implements Page {
     /**
      * @return the PageId associated with this page.
      */
-    public HeapPageId getId() {
-    // some code goes here
-    throw new UnsupportedOperationException("implement this");
+    public HeapPageId getId() {//CHANGES
+        return pid;
     }
 
     /**
@@ -280,7 +283,7 @@ public class HeapPage implements Page {
     /**
      * Returns the number of empty slots on this page.
      */
-    public int getNumEmptySlots() {
+    public int getNumEmptySlots() {//CHANGES
         // some code goes here
         return 0;
     }
@@ -288,7 +291,7 @@ public class HeapPage implements Page {
     /**
      * Returns true if associated slot on this page is filled.
      */
-    public boolean isSlotUsed(int i) {
+    public boolean isSlotUsed(int i) {//CHANGES
         // some code goes here
         return false;
     }
@@ -305,9 +308,8 @@ public class HeapPage implements Page {
      * @return an iterator over all tuples on this page (calling remove on this iterator throws an UnsupportedOperationException)
      * (note that this iterator shouldn't return tuples in empty slots!)
      */
-    public Iterator<Tuple> iterator() {
-        // some code goes here
-        return null;
+    public Iterator<Tuple> iterator() {//CHANGES
+        return Arrays.asList(tuples).iterator();//TODO: this iterator shouldn't return tuples in empty slots! checkout the TupleIterator class maybe ?
     }
 
 }

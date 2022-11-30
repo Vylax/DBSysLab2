@@ -158,7 +158,7 @@ public class TupleDesc implements Serializable {
     	List<TDItem> temp = Arrays.asList(TDItems);
     	int sum=0;
     	for(int i=0; i<this.numFields();i++) {
-    		sum += temp.get(i).fieldType.getLen() /*+ Type.STRING_LEN*/;//TODO is this right ? I'm not sure about the description of the method
+    		sum += temp.get(i).fieldType.getLen();
     	}
         return sum;
     }
