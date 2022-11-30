@@ -10,6 +10,10 @@ public class RecordId implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    //CHANGES
+    PageId pid;
+    int tupleno;
+    int hash;
     /**
      * Creates a new RecordId referring to the specified PageId and tuple
      * number.
@@ -19,24 +23,24 @@ public class RecordId implements Serializable {
      * @param tupleno
      *            the tuple number within the page.
      */
-    public RecordId(PageId pid, int tupleno) {
-        // some code goes here
+    public RecordId(PageId pid, int tupleno) {//CHANGES
+        this.pid = pid;
+        this.tupleno = tupleno;
+        this.hash=Integer.parseInt(pid + "" + tupleno);
     }
 
     /**
      * @return the tuple number this RecordId references.
      */
-    public int getTupleNumber() {
-        // some code goes here
-        return 0;
+    public int getTupleNumber() {//CHANGES
+        return tupleno;
     }
 
     /**
      * @return the page id this RecordId references.
      */
-    public PageId getPageId() {
-        // some code goes here
-        return null;
+    public PageId getPageId() {//CHANGES
+        return pid;
     }
 
     /**
@@ -46,9 +50,12 @@ public class RecordId implements Serializable {
      * @return True if this and o represent the same tuple
      */
     @Override
-    public boolean equals(Object o) {
-        // some code goes here
-        throw new UnsupportedOperationException("implement this");
+    public boolean equals(Object o) {//CHANGES
+        return o instanceof RecordId && this.equals((RecordId)o);
+    }
+
+    public boolean equals(RecordId rid) {//CHANGES
+        return this.getPageId()==rid.getPageId() && this.getTupleNumber()==rid.getTupleNumber();
     }
 
     /**
@@ -58,10 +65,8 @@ public class RecordId implements Serializable {
      * @return An int that is the same for equal RecordId objects.
      */
     @Override
-    public int hashCode() {
-        // some code goes here
-        throw new UnsupportedOperationException("implement this");
-
+    public int hashCode() {//CHANGES
+        return hash;
     }
 
 }
