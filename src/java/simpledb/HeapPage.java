@@ -67,7 +67,6 @@ public class HeapPage implements Page {
     */
     private int getNumTuples() { //CHANGES
         return tuples.length;
-
     }
 
     /**
@@ -76,7 +75,7 @@ public class HeapPage implements Page {
      */
     private int getHeaderSize() { //CHANGES    
         int pageSize = Database.getBufferPool().getPageSize(); 
-        int tupleSize = td.getSize()/getNumTuples();//TODO: make sure this is right
+        int tupleSize = td.getSize()/getNumTuples();
         int tuplesPerPage = pageSize / (tupleSize * 8 + 1);
         return divisionCeil(tuplesPerPage,8);
     }
@@ -284,16 +283,16 @@ public class HeapPage implements Page {
      * Returns the number of empty slots on this page.
      */
     public int getNumEmptySlots() {//CHANGES
-        // some code goes here
-        return 0;
+        int count = 0;
+        for(int i=0;i<header.length;i++) if(header[i] == 0) count++;
+        return count;
     }
 
     /**
      * Returns true if associated slot on this page is filled.
      */
     public boolean isSlotUsed(int i) {//CHANGES
-        // some code goes here
-        return false;
+        return 0 <= i && i < numSlots && header[i] == 1;
     }
 
     /**
@@ -309,7 +308,9 @@ public class HeapPage implements Page {
      * (note that this iterator shouldn't return tuples in empty slots!)
      */
     public Iterator<Tuple> iterator() {//CHANGES
-        return Arrays.asList(tuples).iterator();//TODO: this iterator shouldn't return tuples in empty slots! checkout the TupleIterator class maybe ?
+        List<Tuple> usedTuples = Arrays.asList(tuples);
+        for(int i=usedTuples.size(); i >= 0; i--) if(!isSlotUsed(i)) usedTuples.remove(i);//We do this "backward" so that we can remove elements and change the list size without skipping elements
+        return usedTuples.iterator();
     }
 
 }
