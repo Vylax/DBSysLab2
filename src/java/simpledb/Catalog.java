@@ -44,7 +44,7 @@ public class Catalog {
      * Creates a new, empty catalog.
      */
     public Catalog() {//CHANGES
-        tables = new HashMap<Integer, Table>();
+        tables = new LinkedHashMap<Integer, Table>();
     }
 
     /**
@@ -85,7 +85,7 @@ public class Catalog {
         boolean foundId = false;
         for(Integer TableId : tables.keySet()){
             if(tables.get(TableId).name==name) {
-            	id=TableId;
+            	id=TableId.intValue();
             	foundId = true;
             }
         }
@@ -127,7 +127,7 @@ public class Catalog {
     
     /** Delete all tables from the catalog */
     public void clear() {//CHANGES
-        tables = new HashMap<Integer, Table>();
+        tables = new LinkedHashMap<Integer, Table>();
     }
     
     /**
