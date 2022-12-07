@@ -308,7 +308,7 @@ public class HeapPage implements Page {
      * (note that this iterator shouldn't return tuples in empty slots!)
      */
     public Iterator<Tuple> iterator() {//CHANGES
-        List<Tuple> usedTuples = Arrays.asList(tuples);
+        List<Tuple> usedTuples = Arrays.asList(tuples);//We chose to copy and then remove empty elements because it would be more efficient when the page has more filled than empty tuples (we assume it's more likely in our dbms)
         for(int i=usedTuples.size(); i >= 0; i--) if(!isSlotUsed(i)) usedTuples.remove(i);//We do this "backward" so that we can remove elements and change the list size without skipping elements
         return usedTuples.iterator();
     }
