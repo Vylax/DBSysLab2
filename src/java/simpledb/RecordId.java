@@ -26,7 +26,7 @@ public class RecordId implements Serializable {
     public RecordId(PageId pid, int tupleno) {//CHANGES
         this.pid = pid;
         this.tupleno = tupleno;
-        this.hash=Integer.parseInt(pid + "" + tupleno);
+        this.hash=Integer.parseInt(String.format("%s%s",pid.getTableId(),tupleno));
     }
 
     /**
@@ -51,11 +51,11 @@ public class RecordId implements Serializable {
      */
     @Override
     public boolean equals(Object o) {//CHANGES
-        return o instanceof RecordId && this.equals((RecordId)o);
+    	return o instanceof RecordId && this.equals((RecordId)o);
     }
 
     public boolean equals(RecordId rid) {//CHANGES
-        return this.getPageId()==rid.getPageId() && this.getTupleNumber()==rid.getTupleNumber();
+    	return rid==null ? this.pid==null : this.getPageId().equals(rid.getPageId()) && this.getTupleNumber()==rid.getTupleNumber();
     }
 
     /**
