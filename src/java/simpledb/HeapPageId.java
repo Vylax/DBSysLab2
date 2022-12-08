@@ -13,7 +13,7 @@ public class HeapPageId implements PageId {
      * @param pgNo The page number in that table.
      */
     public HeapPageId(int tableId, int pgNo) {//CHANGES
-        pid = new int[] {tableId, pgNo, Integer.parseInt(tableId + "" + pgNo)};
+        pid = new int[] {tableId, pgNo, (tableId + "" + pgNo).hashCode()};
     }
 
     /** @return the table associated with this PageId */

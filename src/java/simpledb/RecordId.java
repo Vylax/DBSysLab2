@@ -26,7 +26,7 @@ public class RecordId implements Serializable {
     public RecordId(PageId pid, int tupleno) {//CHANGES
         this.pid = pid;
         this.tupleno = tupleno;
-        this.hash=Integer.parseInt(String.format("%s%s",pid.getTableId(),tupleno));
+        this.hash=Integer.parseInt(String.format("%s%s",pid.getPageNumber(),tupleno));
     }
 
     /**
