@@ -51,7 +51,7 @@ public class HeapPageId implements PageId {
     }
 
     public boolean equals(PageId pid) {//CHANGES
-        return pid.getPageNumber()==this.getPageNumber() && pid.getTableId()==this.getTableId();
+        return pid == null ? this == null : pid.getPageNumber()==this.getPageNumber() && pid.getTableId()==this.getTableId();
     }
 
     /**
