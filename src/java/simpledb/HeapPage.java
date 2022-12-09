@@ -283,7 +283,7 @@ public class HeapPage implements Page {
      */
     public int getNumEmptySlots() {//CHANGES
         int count = 0;
-        for(int i=0;i<header.length;i++) if(header[i] == 0) count++;
+        for(int i=0;i<numSlots;i++) if(!isSlotUsed(i)) count++;
         return count;
     }
 
@@ -311,8 +311,8 @@ public class HeapPage implements Page {
      * (note that this iterator shouldn't return tuples in empty slots!)
      */
     public Iterator<Tuple> iterator() {//CHANGES
-        List<Tuple> usedTuples = Arrays.asList(tuples);//We chose to copy and then remove empty elements because it would be more efficient when the page has more filled than empty tuples (we assume it's more likely in our dbms)
-        for(int i=usedTuples.size(); i >= 0; i--) if(!isSlotUsed(i)) usedTuples.remove(i);//We do this "backward" so that we can remove elements and change the list size without skipping elements
+        List<Tuple> usedTuples = new LinkedList<Tuple>(Arrays.asList(tuples));//We chose to copy and then remove empty elements because it would be more efficient when the page has more filled than empty tuples (we assume it's more likely in our dbms)
+        for(int i=usedTuples.size()-1; i >= 0; i--) if(!isSlotUsed(i)) usedTuples.remove(i);//We do this "backward" so that we can remove elements and change the list size without skipping elements
         return usedTuples.iterator();
     }
 
