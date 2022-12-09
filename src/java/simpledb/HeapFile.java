@@ -65,21 +65,30 @@ public class HeapFile implements DbFile {
 
     // see DbFile.java for javadocs
     public Page readPage(PageId pid) {//CHANGES
+    	int pageSize = BufferPool.getPageSize();
+    	int pageNumber  = pid.getPageNumber();
+    	
         try 
         {
+        	HeapPageId hpid = new HeapPageId(getId(), pageNumber);
+        	
         	RandomAccessFile raf = new RandomAccessFile(f, "r");
         	
-        	raf.seek(1);
-        	byte[] bytes = new byte[5];
-        	raf.read(bytes);
+        	long offset = pageSize * pageNumber;
+        	byte[] buffer = new byte[pageSize];
+        	
+        	raf.seek(offset);
+        	raf.read(buffer,0,pageSize);//buffer, byteOffset, byteCount
         	raf.close();
+        	
+        	return new HeapPage(hpid, buffer);
         }
         catch(IOException e) 
         {
         	e.printStackTrace();
         }
     	
-    	return null;//TODO: shouldn't return null every time
+    	return null;
     }
 
     // see DbFile.java for javadocs
@@ -92,7 +101,7 @@ public class HeapFile implements DbFile {
      * Returns the number of pages in this HeapFile.
      */
     public int numPages() {//CHANGES
-        return pages.size();
+        return (int)(f.length() / BufferPool.getPageSize());
     }
 
     // see DbFile.java for javadocs
