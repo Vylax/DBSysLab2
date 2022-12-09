@@ -30,8 +30,15 @@ public class HeapFileIterator implements DbFileIterator {
         i = hp.iterator();
     }
 
-    public boolean hasNext() {
-        return i.hasNext();
+    public boolean hasNext() throws TransactionAbortedException, DbException {
+        if(i.hasNext()) return true;
+
+        if(currPageNumber+1 >= pagesCount) return false;
+
+        HeapPageId tempHPI = new HeapPageId(id, currPageNumber+1);
+        HeapPage tempHP = (HeapPage)Database.getBufferPool().getPage(tid, tempHPI, null);
+        
+        return tempHP.getNumEmptySlots() < tempHP.numSlots;
     }
 
     public Tuple next() throws TransactionAbortedException, DbException {
@@ -54,6 +61,7 @@ public class HeapFileIterator implements DbFileIterator {
     private void goToNextPage() throws TransactionAbortedException, DbException {
     	currPageNumber++;
     	
+        //this shouldn't happen
     	if(currPageNumber >= pagesCount) throw new NoSuchElementException(String.format("Page number %d is out of range", currPageNumber));
         
     	hpid = new HeapPageId(id, currPageNumber);

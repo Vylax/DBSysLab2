@@ -76,7 +76,7 @@ public class HeapPage implements Page {
      * @return the number of bytes in the header of a page in a HeapFile with each tuple occupying tupleSize bytes
      */
     private int getHeaderSize() { //CHANGES
-        return divisionCeil(getNumTuples(),8);
+        return divisionCeil(numSlots,8);
     }
 
     //CHANGES
