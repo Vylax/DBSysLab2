@@ -291,14 +291,11 @@ public class HeapPage implements Page {
      * Returns true if associated slot on this page is filled.
      */
     public boolean isSlotUsed(int i) {//CHANGES
-        return 0 <= i && i < numSlots-1 && header[i] == 1;
+        if(i>=numSlots) return false; //assert that the given slot exists
         
-        /*if (i < numSlots) {
-            int hdNo = (i / 8);
-            int offset = i % 8;
-            return (header[hdNo] & (1 << offset)) != 0;
-        }
-        return false;*/
+        int index = i / 8; //since our header stores bytes we need to get the index of the byte that contains the bit associated to our slot
+    	byte offset = (byte)(1 << (i % 8)); //we then compute the offset within that byte to get the bit associated to our slot
+    	return (header[index] & offset) != 0;//finally we check if it's not set to 0
     }
 
     /**
