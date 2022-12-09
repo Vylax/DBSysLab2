@@ -8,51 +8,56 @@ import java.util.*;
  */
 public class HeapFileIterator implements DbFileIterator {
 	
-    Iterator<Tuple> i = null;
-    TupleDesc td = null;
-    Iterable<Tuple> tuples = null;
+	int pagesCount;
+	int id;
+	TransactionId tid;
+	
+	Iterator<Tuple> i;
+	int currPageNumber;
+	HeapPage hp;
+	HeapPageId hpid;
 
-    /**
-     * Constructs an iterator from the specified Iterable, and the specified
-     * descriptor.
-     * 
-     * @param tuples
-     *            The set of tuples to iterate over
-     */
-    public HeapFileIterator(File f, TupleDesc td, int id, TransactionId tid) {
-        this.td = td;
-        this.tuples = tuples;
-
-        // check that all tuples are the right TupleDesc
-        for (Tuple t : tuples) {
-            if (!t.getTupleDesc().equals(td))
-                throw new IllegalArgumentException(
-                        "incompatible tuple in tuple set");
-        }
+    public HeapFileIterator(int pagesCount, int id, TransactionId tid) {
+        this.pagesCount = pagesCount;
+        this.id = id;
+        this.tid = tid;
     }
 
-    public void open() {
-        i = tuples.iterator();
+    public void open() throws TransactionAbortedException, DbException {
+    	currPageNumber = 0;
+        hpid = new HeapPageId(id, currPageNumber);
+        hp = (HeapPage)Database.getBufferPool().getPage(tid, hpid, null);
+        i = hp.iterator();
     }
 
     public boolean hasNext() {
         return i.hasNext();
     }
 
-    public Tuple next() {
-        return i.next();
+    public Tuple next() throws TransactionAbortedException, DbException {
+        if(!i.hasNext()) goToNextPage();
+    	return i.next();
     }
 
-    public void rewind() {
+    public void rewind() throws TransactionAbortedException, DbException {
         close();
         open();
     }
 
-    public TupleDesc getTupleDesc() {
-        return td;
-    }
-
     public void close() {
+    	currPageNumber = 0;
+        hpid = null;
+        hp = null;
         i = null;
+    }
+    
+    private void goToNextPage() throws TransactionAbortedException, DbException {
+    	currPageNumber++;
+    	
+    	if(currPageNumber >= pagesCount) throw new NoSuchElementException(String.format("Page number %d is out of range", currPageNumber));
+        
+    	hpid = new HeapPageId(id, currPageNumber);
+        hp = (HeapPage)Database.getBufferPool().getPage(tid, hpid, null);
+        i = hp.iterator();
     }
 }
