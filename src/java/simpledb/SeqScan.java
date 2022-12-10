@@ -10,7 +10,12 @@ import java.util.*;
 public class SeqScan implements OpIterator {
 
     private static final long serialVersionUID = 1L;
-
+    //CHANGES
+    TupleDesc td;
+    int tableid;
+    String tableAlias;
+    TransactionId tid;
+    
     /**
      * Creates a sequential scan over the specified table as a part of the
      * specified transaction.
@@ -27,8 +32,19 @@ public class SeqScan implements OpIterator {
      *            are, but the resulting name can be null.fieldName,
      *            tableAlias.null, or null.null).
      */
-    public SeqScan(TransactionId tid, int tableid, String tableAlias) {
-        // some code goes here
+    public SeqScan(TransactionId tid, int tableid, String tableAlias) {//CHANGES
+        this.tid = tid;
+        this.tableid = tableid;
+        this.tableAlias = tableAlias;
+
+        TupleDesc originalTD = Database.getCatalog().getTupleDesc(tableid);
+        Type[] tdTypes = new Type[originalTD.numFields()];
+        String[] tdFieldNames = new String[originalTD.numFields()];
+        for(int i=0; i<originalTD.numFields(); i++) {
+            tdTypes[i] = originalTD.getFieldType(i);
+            tdFieldNames[i] = tableAlias + "." + originalTD.getFieldName(i);
+        }
+        this.td = new TupleDesc(tdTypes,tdFieldNames);
     }
 
     /**
@@ -37,16 +53,15 @@ public class SeqScan implements OpIterator {
      *       be the actual name of the table in the catalog of the database
      * */
     public String getTableName() {
-        return null;
+        return Database.getCatalog().getTableName(tableid);
     }
 
     /**
      * @return Return the alias of the table this operator scans.
      * */
-    public String getAlias()
+    public String getAlias()//CHANGES
     {
-        // some code goes here
-        return null;
+        return tableAlias;
     }
 
     /**
@@ -61,7 +76,7 @@ public class SeqScan implements OpIterator {
      *            are, but the resulting name can be null.fieldName,
      *            tableAlias.null, or null.null).
      */
-    public void reset(int tableid, String tableAlias) {
+    public void reset(int tableid, String tableAlias) {//CHANGES
         // some code goes here
     }
 
@@ -69,7 +84,7 @@ public class SeqScan implements OpIterator {
         this(tid, tableId, Database.getCatalog().getTableName(tableId));
     }
 
-    public void open() throws DbException, TransactionAbortedException {
+    public void open() throws DbException, TransactionAbortedException {//CHANGES
         // some code goes here
     }
 
@@ -83,28 +98,27 @@ public class SeqScan implements OpIterator {
      * @return the TupleDesc with field names from the underlying HeapFile,
      *         prefixed with the tableAlias string from the constructor.
      */
-    public TupleDesc getTupleDesc() {
-        // some code goes here
-        return null;
+    public TupleDesc getTupleDesc() {//CHANGES
+        return td;
     }
 
-    public boolean hasNext() throws TransactionAbortedException, DbException {
+    public boolean hasNext() throws TransactionAbortedException, DbException {//CHANGES
         // some code goes here
         return false;
     }
 
     public Tuple next() throws NoSuchElementException,
-            TransactionAbortedException, DbException {
+            TransactionAbortedException, DbException {//CHANGES
         // some code goes here
         return null;
     }
 
-    public void close() {
+    public void close() {//CHANGES
         // some code goes here
     }
 
     public void rewind() throws DbException, NoSuchElementException,
-            TransactionAbortedException {
+            TransactionAbortedException {//CHANGES
         // some code goes here
     }
 }
