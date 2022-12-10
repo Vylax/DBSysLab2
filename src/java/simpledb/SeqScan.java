@@ -15,7 +15,8 @@ public class SeqScan implements OpIterator {
     int tableid;
     String tableAlias;
     TransactionId tid;
-    
+    DbFileIterator iterator;
+
     /**
      * Creates a sequential scan over the specified table as a part of the
      * specified transaction.
@@ -34,9 +35,11 @@ public class SeqScan implements OpIterator {
      */
     public SeqScan(TransactionId tid, int tableid, String tableAlias) {//CHANGES
         this.tid = tid;
-        this.tableid = tableid;
-        this.tableAlias = tableAlias;
+        reset(tableid, tableAlias);
+    }
 
+    //CHANGES
+    private void resetTD(int tableid, String tableAlias){
         TupleDesc originalTD = Database.getCatalog().getTupleDesc(tableid);
         Type[] tdTypes = new Type[originalTD.numFields()];
         String[] tdFieldNames = new String[originalTD.numFields()];
@@ -52,7 +55,7 @@ public class SeqScan implements OpIterator {
      *       return the table name of the table the operator scans. This should
      *       be the actual name of the table in the catalog of the database
      * */
-    public String getTableName() {
+    public String getTableName() {//CHANGES
         return Database.getCatalog().getTableName(tableid);
     }
 
@@ -77,7 +80,10 @@ public class SeqScan implements OpIterator {
      *            tableAlias.null, or null.null).
      */
     public void reset(int tableid, String tableAlias) {//CHANGES
-        // some code goes here
+        this.tableid = tableid;
+        this.tableAlias = tableAlias;
+        resetTD(tableid, tableAlias);
+        this.iterator = Database.getCatalog().getDatabaseFile(tableid).iterator(tid);
     }
 
     public SeqScan(TransactionId tid, int tableId) {
@@ -85,7 +91,7 @@ public class SeqScan implements OpIterator {
     }
 
     public void open() throws DbException, TransactionAbortedException {//CHANGES
-        // some code goes here
+        iterator.open();
     }
 
     /**
@@ -103,22 +109,20 @@ public class SeqScan implements OpIterator {
     }
 
     public boolean hasNext() throws TransactionAbortedException, DbException {//CHANGES
-        // some code goes here
-        return false;
+        return iterator.hasNext();
     }
 
     public Tuple next() throws NoSuchElementException,
             TransactionAbortedException, DbException {//CHANGES
-        // some code goes here
-        return null;
+        return iterator.next();
     }
 
     public void close() {//CHANGES
-        // some code goes here
+        iterator.close();
     }
 
     public void rewind() throws DbException, NoSuchElementException,
             TransactionAbortedException {//CHANGES
-        // some code goes here
+        iterator.rewind();
     }
 }
