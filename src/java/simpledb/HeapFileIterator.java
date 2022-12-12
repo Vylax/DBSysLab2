@@ -31,6 +31,7 @@ public class HeapFileIterator implements DbFileIterator {
     }
 
     public boolean hasNext() throws TransactionAbortedException, DbException {
+    	if(i == null) return false;
         if(i.hasNext()) return true;
 
         if(currPageNumber+1 >= pagesCount) return false;
@@ -42,11 +43,13 @@ public class HeapFileIterator implements DbFileIterator {
     }
 
     public Tuple next() throws TransactionAbortedException, DbException {
+    	if(i == null) throw new NoSuchElementException("iterator wasn't open");
         if(!i.hasNext()) goToNextPage();
     	return i.next();
     }
 
     public void rewind() throws TransactionAbortedException, DbException {
+    	if(i == null) throw new DbException("iterator wasn't open");
         close();
         open();
     }
