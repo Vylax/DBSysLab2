@@ -71,7 +71,7 @@ public class BufferPool {
         throws TransactionAbortedException, DbException {//CHANGES
         int firstFreeSlot = -1;
         for(int i=0; i<bufferPool.length; i++){
-            if(bufferPool[i] != null && bufferPool[i].getId()==pid) return bufferPool[i];
+            if(bufferPool[i] != null && bufferPool[i].getId().equals(pid)) return bufferPool[i];
             if(firstFreeSlot<0 && bufferPool[i]==null) firstFreeSlot=i;
         }
         if(firstFreeSlot>=0){
