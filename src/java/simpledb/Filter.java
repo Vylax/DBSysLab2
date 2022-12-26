@@ -9,6 +9,10 @@ public class Filter extends Operator {
 
     private static final long serialVersionUID = 1L;
 
+    //CHANGES
+    Predicate p;
+    OpIterator child;
+
     /**
      * Constructor accepts a predicate to apply and a child operator to read
      * tuples to filter from.
@@ -18,30 +22,29 @@ public class Filter extends Operator {
      * @param child
      *            The child operator
      */
-    public Filter(Predicate p, OpIterator child) {
-        // some code goes here
+    public Filter(Predicate p, OpIterator child) {//CHANGES
+        this.p = p;
+        this.child = child;
     }
 
-    public Predicate getPredicate() {
-        // some code goes here
-        return null;
+    public Predicate getPredicate() {//CHANGES
+        return p;
     }
 
-    public TupleDesc getTupleDesc() {
-        // some code goes here
-        return null;
+    public TupleDesc getTupleDesc() {//CHANGES
+        return child.getTupleDesc();
     }
 
     public void open() throws DbException, NoSuchElementException,
-            TransactionAbortedException {
+            TransactionAbortedException {//CHANGES
         // some code goes here
     }
 
-    public void close() {
+    public void close() {//CHANGES
         // some code goes here
     }
 
-    public void rewind() throws DbException, TransactionAbortedException {
+    public void rewind() throws DbException, TransactionAbortedException {//CHANGES
         // some code goes here
     }
 
@@ -55,19 +58,19 @@ public class Filter extends Operator {
      * @see Predicate#filter
      */
     protected Tuple fetchNext() throws NoSuchElementException,
-            TransactionAbortedException, DbException {
+            TransactionAbortedException, DbException {//CHANGES
         // some code goes here
         return null;
     }
 
     @Override
-    public OpIterator[] getChildren() {
+    public OpIterator[] getChildren() {//CHANGES
         // some code goes here
         return null;
     }
 
     @Override
-    public void setChildren(OpIterator[] children) {
+    public void setChildren(OpIterator[] children) {//CHANGES
         // some code goes here
     }
 
