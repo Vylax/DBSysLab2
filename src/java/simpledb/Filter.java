@@ -12,6 +12,7 @@ public class Filter extends Operator {
     //CHANGES
     Predicate p;
     OpIterator child;
+    boolean isOpen;
 
     /**
      * Constructor accepts a predicate to apply and a child operator to read
@@ -25,6 +26,7 @@ public class Filter extends Operator {
     public Filter(Predicate p, OpIterator child) {//CHANGES
         this.p = p;
         this.child = child;
+        isOpen = false;
     }
 
     public Predicate getPredicate() {//CHANGES
@@ -37,15 +39,18 @@ public class Filter extends Operator {
 
     public void open() throws DbException, NoSuchElementException,
             TransactionAbortedException {//CHANGES
-        // some code goes here
+        child.open();
+        isOpen = true;
     }
 
     public void close() {//CHANGES
-        // some code goes here
+        child.close();
+        isOpen = false;
     }
 
     public void rewind() throws DbException, TransactionAbortedException {//CHANGES
-        // some code goes here
+        if(!isOpen) throw new IllegalStateException("The iterator is not open");
+        child.rewind();
     }
 
     /**
@@ -59,19 +64,23 @@ public class Filter extends Operator {
      */
     protected Tuple fetchNext() throws NoSuchElementException,
             TransactionAbortedException, DbException {//CHANGES
-        // some code goes here
+        if(!isOpen) throw new IllegalStateException("The iterator is not open");
+
+        while(child.hasNext()){
+            Tuple nextCandidaTuple = child.next();
+            if(p.filter(nextCandidaTuple)) return nextCandidaTuple;
+        }
         return null;
     }
 
     @Override
     public OpIterator[] getChildren() {//CHANGES
-        // some code goes here
-        return null;
+        return new OpIterator[] {child};//TODO: check if this is what's expected
     }
 
     @Override
     public void setChildren(OpIterator[] children) {//CHANGES
-        // some code goes here
+        child = children[0];//TODO: check if this is what's expected
     }
 
 }
