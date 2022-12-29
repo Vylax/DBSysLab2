@@ -9,6 +9,13 @@ public class Join extends Operator {
 
     private static final long serialVersionUID = 1L;
 
+    //CHANGES
+    JoinPredicate p;
+    OpIterator child1;
+    OpIterator child2;
+    boolean isOpen;
+    TupleDesc td;
+
     /**
      * Constructor. Accepts two children to join and the predicate to join them
      * on
@@ -20,13 +27,15 @@ public class Join extends Operator {
      * @param child2
      *            Iterator for the right(inner) relation to join
      */
-    public Join(JoinPredicate p, OpIterator child1, OpIterator child2) {
-        // some code goes here
+    public Join(JoinPredicate p, OpIterator child1, OpIterator child2) {//CHANGES
+        this.p = p;
+        this.child1 = child1;
+        this.child2 = child2;
+        td = null;
     }
 
-    public JoinPredicate getJoinPredicate() {
-        // some code goes here
-        return null;
+    public JoinPredicate getJoinPredicate() {//CHANGES
+        return p;
     }
 
     /**
@@ -34,9 +43,8 @@ public class Join extends Operator {
      *       the field name of join field1. Should be quantified by
      *       alias or table name.
      * */
-    public String getJoinField1Name() {
-        // some code goes here
-        return null;
+    public String getJoinField1Name() {//CHANGES
+        return child1.getTupleDesc().getFieldName(p.getField1());//TODO Should be quantified by alias or table name. ??????
     }
 
     /**
@@ -44,31 +52,37 @@ public class Join extends Operator {
      *       the field name of join field2. Should be quantified by
      *       alias or table name.
      * */
-    public String getJoinField2Name() {
-        // some code goes here
-        return null;
+    public String getJoinField2Name() {//CHANGES
+        return child2.getTupleDesc().getFieldName(p.getField2());//TODO Should be quantified by alias or table name. ??????
     }
 
     /**
      * @see simpledb.TupleDesc#merge(TupleDesc, TupleDesc) for possible
      *      implementation logic.
      */
-    public TupleDesc getTupleDesc() {
-        // some code goes here
-        return null;
+    public TupleDesc getTupleDesc() {//CHANGES
+        if(td == null) td = TupleDesc.merge(child1.getTupleDesc(), child2.getTupleDesc());
+        return td;
     }
 
     public void open() throws DbException, NoSuchElementException,
-            TransactionAbortedException {
-        // some code goes here
+            TransactionAbortedException {//CHANGES
+        child1.open();
+        child2.open();
+        isOpen = true;
     }
 
-    public void close() {
-        // some code goes here
+    public void close() {//CHANGES
+        if(!isOpen) throw new IllegalStateException("The iterator is not open");
+        child1.close();
+        child2.close();
+        isOpen = false;
     }
 
-    public void rewind() throws DbException, TransactionAbortedException {
-        // some code goes here
+    public void rewind() throws DbException, TransactionAbortedException {//CHANGES
+        if(!isOpen) throw new IllegalStateException("The iterator is not open");
+        child1.rewind();
+        child2.rewind();
     }
 
     /**
@@ -89,20 +103,24 @@ public class Join extends Operator {
      * @return The next matching tuple.
      * @see JoinPredicate#filter
      */
-    protected Tuple fetchNext() throws TransactionAbortedException, DbException {
+    protected Tuple fetchNext() throws TransactionAbortedException, DbException {//CHANGES
+        if(!isOpen) throw new IllegalStateException("The iterator is not open");
         // some code goes here
+        //reuse some code from Filter.fetchNext (nested while loops over different joins predicates ofr each loop)
         return null;
     }
 
     @Override
-    public OpIterator[] getChildren() {
-        // some code goes here
-        return null;
+    public OpIterator[] getChildren() {//CHANGES
+        return new OpIterator[] {child1, child2};
     }
 
     @Override
-    public void setChildren(OpIterator[] children) {
-        // some code goes here
+    public void setChildren(OpIterator[] children) {//CHANGES
+       if(children.length != 2) throw new IllegalArgumentException("Two children are expected, got " + children.length);
+
+       child1 = children[0];
+       child2 = children[1];
     }
 
 }
