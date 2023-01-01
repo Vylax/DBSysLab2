@@ -105,7 +105,6 @@ public class Join extends Operator {
      */
     protected Tuple fetchNext() throws TransactionAbortedException, DbException {//CHANGES
         if(!isOpen) throw new IllegalStateException("The iterator is not open");
-        // some code goes here
         //reuse some code from Filter.fetchNext (nested while loops over different joins predicates ofr each loop)
         while(child1.hasNext() && child2.hasNext()){
             Tuple[] nextCandidaTuples = new Tuple[] {child1.next(), child2.next()};
