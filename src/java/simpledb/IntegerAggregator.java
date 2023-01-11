@@ -1,11 +1,21 @@
 package simpledb;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Knows how to compute some aggregate over a set of IntFields.
  */
 public class IntegerAggregator implements Aggregator {
 
     private static final long serialVersionUID = 1L;
+
+    //CHANGES
+    int gbfield;
+    Type gbfieldtype;
+    int afield;
+    Op what;
+    Map<Field, Field> aggregate;
 
     /**
      * Aggregate constructor
@@ -22,8 +32,12 @@ public class IntegerAggregator implements Aggregator {
      *            the aggregation operator
      */
 
-    public IntegerAggregator(int gbfield, Type gbfieldtype, int afield, Op what) {
-        // some code goes here
+    public IntegerAggregator(int gbfield, Type gbfieldtype, int afield, Op what) {//CHANGES
+        this.gbfield = gbfield;
+        this.gbfieldtype = gbfieldtype;
+        this.afield = afield;
+        this.what = what;
+        aggregate = new HashMap<Field, Field>();
     }
 
     /**
@@ -33,8 +47,8 @@ public class IntegerAggregator implements Aggregator {
      * @param tup
      *            the Tuple containing an aggregate field and a group-by field
      */
-    public void mergeTupleIntoGroup(Tuple tup) {
-        // some code goes here
+    public void mergeTupleIntoGroup(Tuple tup) {//CHANGES
+        aggregate.put(tup.getField(gbfield),tup.getField(afield));
     }
 
     /**
@@ -45,7 +59,7 @@ public class IntegerAggregator implements Aggregator {
      *         aggregateVal is determined by the type of aggregate specified in
      *         the constructor.
      */
-    public OpIterator iterator() {
+    public OpIterator iterator() {//CHANGES
         // some code goes here
         throw new
         UnsupportedOperationException("please implement me for lab2");
