@@ -88,7 +88,6 @@ public class Insert extends Operator {
         Tuple output = new Tuple(td);
         output.setField(0,new IntField(count));
         return output;
-
     }
 
     @Override

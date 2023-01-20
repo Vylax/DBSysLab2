@@ -28,6 +28,9 @@ public class BufferPool {
 
     //CHANGES
     Page[] bufferPool;
+    private ConcurrentHashMap<PageId,Integer> lruList = new ConcurrentHashMap<PageId,Integer>();
+    private int counter = 0;
+    private int numPages;
 
     /**
      * Creates a BufferPool that caches up to numPages pages.
@@ -36,6 +39,7 @@ public class BufferPool {
      */
     public BufferPool(int numPages) {//CHANGES
         bufferPool = new Page[numPages];
+        this.numPages = numPages;
     }
     
     public static int getPageSize() {
@@ -69,16 +73,22 @@ public class BufferPool {
      */
     public  Page getPage(TransactionId tid, PageId pid, Permissions perm)
         throws TransactionAbortedException, DbException {//CHANGES
-        int firstFreeSlot = -1;
-        for(int i=0; i<bufferPool.length; i++){
-            if(bufferPool[i] != null && bufferPool[i].getId().equals(pid)) return bufferPool[i];
-            if(firstFreeSlot<0 && bufferPool[i]==null) firstFreeSlot=i;
+            int firstFreeSlot = -1;
+            for(int i=0; i<bufferPool.length; i++){
+                if(bufferPool[i] != null && bufferPool[i].getId().equals(pid)) {
+                    lruList.put(pid,counter++);
+                    return bufferPool[i];
+                }
+                if(firstFreeSlot<0 && bufferPool[i]==null) firstFreeSlot=i;
+            }
+            if(firstFreeSlot>=0){
+                bufferPool[firstFreeSlot] = Database.getCatalog().getDatabaseFile(pid.getTableId()).readPage(pid);
+                lruList.put(pid,counter++);
+                if(lruList.size() > numPages) evictPage();
+                return bufferPool[firstFreeSlot];
+            }
+            throw new DbException("Buffer Pool is full");
         }
-        if(firstFreeSlot>=0){
-            bufferPool[firstFreeSlot] = Database.getCatalog().getDatabaseFile(pid.getTableId()).readPage(pid);//get page with the given pid
-            return bufferPool[firstFreeSlot];
-        }
-        throw new DbException("Buffer Pool is full");
     }
 
     /**
@@ -164,7 +174,6 @@ public class BufferPool {
      */
     public  void deleteTuple(TransactionId tid, Tuple t)
         throws DbException, IOException, TransactionAbortedException { //CHANGES
-        // just exploit API to to the job
         ArrayList<Page> pages = Database.getCatalog().getDatabaseFile(t.getRecordId().getPageId().getTableId()).deleteTuple(tid, t);
 
         for (Page page : pages){
@@ -177,10 +186,12 @@ public class BufferPool {
      * NB: Be careful using this routine -- it writes dirty data to disk so will
      *     break simpledb if running in NO STEAL mode.
      */
-    public synchronized void flushAllPages() throws IOException {
-        // some code goes here
-        // not necessary for lab1
-
+    public synchronized void flushAllPages() throws IOException { //CHANGES
+        for(int i = 0; i < bufferPool.length; i++) {
+            if(bufferPool[i] != null) {
+                flushPage(bufferPool[i].getId());
+            }
+        }
     }
 
     /** Remove the specific page id from the buffer pool.
@@ -200,9 +211,11 @@ public class BufferPool {
      * Flushes a certain page to disk
      * @param pid an ID indicating the page to flush
      */
-    private synchronized  void flushPage(PageId pid) throws IOException {
-        // some code goes here
-        // not necessary for lab1
+    private synchronized  void flushPage(PageId pid) throws IOException { //CHANGES
+        if(bufferPool[lruList.get(pid)].isDirty() != null){
+            Database.getCatalog().getDatabaseFile(pid.getTableId()).writePage(bufferPool[lruList.get(pid)]);
+            bufferPool[lruList.get(pid)].markDirty(false, null);
+        }
     }
 
     /** Write all pages of the specified transaction to disk.
@@ -216,9 +229,22 @@ public class BufferPool {
      * Discards a page from the buffer pool.
      * Flushes the page to disk to ensure dirty pages are updated on disk.
      */
-    private synchronized  void evictPage() throws DbException {
-        // some code goes here
-        // not necessary for lab1
+    private synchronized  void evictPage() throws DbException { //CHANGES
+        PageId pid = null;
+        int min = Integer.MAX_VALUE;
+        for(PageId p : lruList.keySet()){
+            if(lruList.get(p) < min){
+                min = lruList.get(p);
+                pid = p;
+            }
+        }
+        try {
+            flushPage(pid);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        bufferPool[lruList.get(pid)] = null;
+        lruList.remove(pid);
     }
 
 }
