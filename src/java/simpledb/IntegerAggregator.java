@@ -118,13 +118,10 @@ public class IntegerAggregator implements Aggregator {
 
     //CHANGES
     private TupleDesc getTupleDesc(){
-        Type[] typeAr;
-        String[] fieldAr;
-
         boolean no_grouping = gbField == Aggregator.NO_GROUPING;
 
-        typeAr = no_grouping ? new Type[] { Type.INT_TYPE } : new Type[] { gbFieldType, Type.INT_TYPE };
-        fieldAr = no_grouping ? new String[] { aFieldName } : new String[] { gFieldName, aFieldName };
+        Type[] typeAr = no_grouping ? new Type[] { Type.INT_TYPE } : new Type[] { gbFieldType, Type.INT_TYPE };
+        String[] fieldAr = no_grouping ? new String[] { aFieldName } : new String[] { gFieldName, aFieldName };
         
         return new TupleDesc(typeAr, fieldAr);
     }
