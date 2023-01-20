@@ -41,10 +41,10 @@ public class IntegerAggregator implements Aggregator {
         this.gbFieldType=gbfieldtype;
         this.aField=afield;
         this.operator=what;
-        extremas = new HashMap<>(); //if operator= min contains the current min value; if operator = max contains the current max value
-        counts = new HashMap<>(); // contains the current count of tuples
-        sums = new HashMap<>(); // contains the current sum of aggregate fields
-        averages = new HashMap<>(); // contains the current average of aggregate fields
+        extremas = new HashMap<>(); // If the operator is min or max, it contains the min (resp max) value
+        counts = new HashMap<>();
+        sums = new HashMap<>();
+        averages = new HashMap<>();
 
         maps = new HashMap<>();
         maps.put(Op.MAX, extremas);
