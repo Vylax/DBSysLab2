@@ -123,15 +123,8 @@ public class IntegerAggregator implements Aggregator {
 
         boolean no_grouping = gbField == Aggregator.NO_GROUPING;
 
-        typeAr = no_grouping ? new Type[1] : new Type[2];
-        fieldAr = no_grouping ? new String[1] : new String[2];
-        typeAr[0] = no_grouping ? Type.INT_TYPE : gbFieldType;
-        fieldAr[0] = no_grouping ? aFieldName : gFieldName;
-
-        if(gbField != Aggregator.NO_GROUPING){
-            typeAr[1] = Type.INT_TYPE;
-            fieldAr[1] = aFieldName;
-        }
+        typeAr = no_grouping ? new Type[] { Type.INT_TYPE } : new Type[] { gbFieldType, Type.INT_TYPE };
+        fieldAr = no_grouping ? new String[] { aFieldName } : new String[] { gFieldName, aFieldName };
         
         return new TupleDesc(typeAr, fieldAr);
     }
@@ -152,5 +145,4 @@ public class IntegerAggregator implements Aggregator {
         }
         return tuples;
     }
-
 }
