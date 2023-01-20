@@ -18,6 +18,7 @@ public class HeapPage implements Page {
     final byte header[];
     final Tuple tuples[];
     final int numSlots;
+    TransactionId tid;
     
     //CHANGES
     private boolean dirty = false;
@@ -283,15 +284,14 @@ public class HeapPage implements Page {
      */
     public void markDirty(boolean dirty, TransactionId tid) { //CHANGES
         this.dirty = dirty;
+        this.tid = tid;
     }
 
     /**
      * Returns the tid of the transaction that last dirtied this page, or null if the page is not dirty
      */
-    public TransactionId isDirty() {
-        // some code goes here
-	// Not necessary for lab1
-        return null;      
+    public TransactionId isDirty() { //CHANGES
+    	return !dirty ? null : tid;
     }
 
     /**

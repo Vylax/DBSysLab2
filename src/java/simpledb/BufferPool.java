@@ -2,6 +2,8 @@ package simpledb;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -28,6 +30,7 @@ public class BufferPool {
 
     //CHANGES
     Page[] bufferPool;
+    private Map<PageId,Integer> pagesDict;
     private ConcurrentHashMap<PageId,Integer> lruList = new ConcurrentHashMap<PageId,Integer>();
     private int counter = 0;
     private int numPages;
@@ -40,6 +43,7 @@ public class BufferPool {
     public BufferPool(int numPages) {//CHANGES
         bufferPool = new Page[numPages];
         this.numPages = numPages;
+        pagesDict = new HashMap<PageId,Integer>();
     }
     
     public static int getPageSize() {
@@ -71,24 +75,32 @@ public class BufferPool {
      * @param pid the ID of the requested page
      * @param perm the requested permissions on the page
      */
-    public  Page getPage(TransactionId tid, PageId pid, Permissions perm)
+    public Page getPage(TransactionId tid, PageId pid, Permissions perm)
         throws TransactionAbortedException, DbException {//CHANGES
-            int firstFreeSlot = -1;
-            for(int i=0; i<bufferPool.length; i++){
-                if(bufferPool[i] != null && bufferPool[i].getId().equals(pid)) {
-                    lruList.put(pid,counter++);
-                    return bufferPool[i];
-                }
+    	Integer index = pagesDict.get(pid);
+    	if(index != null){
+    		lruList.put(pid,counter++);
+            return bufferPool[index];
+        }
+    	
+        int firstFreeSlot = -1;
+        
+        while(firstFreeSlot < 0) {
+        	for(int i=0; i<bufferPool.length; i++){
                 if(firstFreeSlot<0 && bufferPool[i]==null) firstFreeSlot=i;
             }
+            
             if(firstFreeSlot>=0){
+            	pagesDict.put(pid, firstFreeSlot);
                 bufferPool[firstFreeSlot] = Database.getCatalog().getDatabaseFile(pid.getTableId()).readPage(pid);
                 lruList.put(pid,counter++);
                 if(lruList.size() > numPages) evictPage();
                 return bufferPool[firstFreeSlot];
             }
-            throw new DbException("Buffer Pool is full");
+            evictPage();
         }
+        
+        throw new DbException("Buffer Pool is full");
     }
 
     /**
@@ -152,11 +164,20 @@ public class BufferPool {
      */
     public void insertTuple(TransactionId tid, int tableId, Tuple t)
         throws DbException, IOException, TransactionAbortedException { //CHANGES
-        ArrayList<Page> pages = Database.getCatalog().getDatabaseFile(tableId).insertTuple(tid, t);
-
-        for (Page page : pages) {
-            page.markDirty(true, tid);
-        }
+        ArrayList<Page> pages = ((HeapFile)Database.getCatalog().getDatabaseFile(tableId)).insertTuple(tid, t);
+        
+        pages.forEach(it -> {
+            if(!pagesDict.containsKey(it.getId())){
+            	
+            	int firstFreeSlot = -1;
+                for(int i=0; i<bufferPool.length; i++){
+                    if(firstFreeSlot<0 && bufferPool[i]==null) firstFreeSlot=i;
+                }
+                
+                pagesDict.put(it.getId(), firstFreeSlot);
+                bufferPool[firstFreeSlot] = it;
+            }
+        });
     }
 
     /**
@@ -188,7 +209,7 @@ public class BufferPool {
      */
     public synchronized void flushAllPages() throws IOException { //CHANGES
         for(int i = 0; i < bufferPool.length; i++) {
-            if(bufferPool[i] != null) {
+            if(bufferPool[i] != null && lruList.get(bufferPool[i].getId()) != null) {
                 flushPage(bufferPool[i].getId());
             }
         }
@@ -202,9 +223,12 @@ public class BufferPool {
         Also used by B+ tree files to ensure that deleted pages
         are removed from the cache so they can be reused safely
     */
-    public synchronized void discardPage(PageId pid) {
-        // some code goes here
-        // not necessary for lab1
+    public synchronized void discardPage(PageId pid) { //CHANGES
+    	if(pagesDict.containsKey(pid)){
+            Integer index = pagesDict.get(pid);
+            bufferPool[index] = null;
+            pagesDict.remove(pid);
+        }
     }
 
     /**
@@ -212,9 +236,9 @@ public class BufferPool {
      * @param pid an ID indicating the page to flush
      */
     private synchronized  void flushPage(PageId pid) throws IOException { //CHANGES
-        if(bufferPool[lruList.get(pid)].isDirty() != null){
-            Database.getCatalog().getDatabaseFile(pid.getTableId()).writePage(bufferPool[lruList.get(pid)]);
-            bufferPool[lruList.get(pid)].markDirty(false, null);
+        if(bufferPool[pagesDict.get(pid)].isDirty() != null){
+            Database.getCatalog().getDatabaseFile(pid.getTableId()).writePage(bufferPool[pagesDict.get(pid)]);
+            bufferPool[pagesDict.get(pid)].markDirty(false, null);
         }
     }
 
@@ -243,7 +267,7 @@ public class BufferPool {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        bufferPool[lruList.get(pid)] = null;
+        bufferPool[pagesDict.get(pid)] = null;
         lruList.remove(pid);
     }
 

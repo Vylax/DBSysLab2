@@ -39,11 +39,13 @@ public class Filter extends Operator {
 
     public void open() throws DbException, NoSuchElementException,
             TransactionAbortedException {//CHANGES
+    	super.open();
         child.open();
         isOpen = true;
     }
 
     public void close() {//CHANGES
+    	super.close();
         child.close();
         isOpen = false;
     }

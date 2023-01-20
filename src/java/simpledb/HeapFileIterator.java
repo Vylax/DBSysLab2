@@ -23,6 +23,7 @@ public class HeapFileIterator implements DbFileIterator {
         this.tid = tid;
     }
 
+    @Override
     public void open() throws TransactionAbortedException, DbException {
     	currPageNumber = 0;
         hpid = new HeapPageId(id, currPageNumber);
@@ -30,6 +31,7 @@ public class HeapFileIterator implements DbFileIterator {
         i = hp.iterator();
     }
 
+    @Override
     public boolean hasNext() throws TransactionAbortedException, DbException {
     	if(i == null) return false;
         if(i.hasNext()) return true;
@@ -42,18 +44,21 @@ public class HeapFileIterator implements DbFileIterator {
         return tempHP.getNumEmptySlots() < tempHP.numSlots;
     }
 
+    @Override
     public Tuple next() throws TransactionAbortedException, DbException {
     	if(i == null) throw new NoSuchElementException("iterator wasn't open");
         if(!i.hasNext()) goToNextPage();
     	return i.next();
     }
 
+    @Override
     public void rewind() throws TransactionAbortedException, DbException {
     	if(i == null) throw new DbException("iterator wasn't open");
         close();
         open();
     }
 
+    @Override
     public void close() {
     	currPageNumber = 0;
         hpid = null;

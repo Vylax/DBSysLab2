@@ -13,8 +13,8 @@ public class Join extends Operator {
     JoinPredicate p;
     OpIterator child1;
     OpIterator child2;
-    boolean isOpen;
     TupleDesc td;
+    Tuple tuple1;
 
     /**
      * Constructor. Accepts two children to join and the predicate to join them
@@ -67,20 +67,18 @@ public class Join extends Operator {
 
     public void open() throws DbException, NoSuchElementException,
             TransactionAbortedException {//CHANGES
+    	super.open();
         child1.open();
         child2.open();
-        isOpen = true;
     }
 
     public void close() {//CHANGES
-        if(!isOpen) throw new IllegalStateException("The iterator is not open");
+        super.close();
         child1.close();
         child2.close();
-        isOpen = false;
     }
 
     public void rewind() throws DbException, TransactionAbortedException {//CHANGES
-        if(!isOpen) throw new IllegalStateException("The iterator is not open");
         child1.rewind();
         child2.rewind();
     }
@@ -104,13 +102,43 @@ public class Join extends Operator {
      * @see JoinPredicate#filter
      */
     protected Tuple fetchNext() throws TransactionAbortedException, DbException {//CHANGES
-        if(!isOpen) throw new IllegalStateException("The iterator is not open");
-        //reuse some code from Filter.fetchNext (nested while loops over different joins predicates ofr each loop)
-        while(child1.hasNext() && child2.hasNext()){
-            Tuple[] nextCandidaTuples = new Tuple[] {child1.next(), child2.next()};
-            if(p.filter(nextCandidaTuples[0],nextCandidaTuples[1])) return Tuple.merge(nextCandidaTuples[0],nextCandidaTuples[1]); //TODO: create Tuple.merge method !!!
-        }
-        return null;
+    	if(tuple1 == null){
+    		if(!child1.hasNext()) 
+    			return null;
+    		tuple1 = child1.next();
+	    }
+    	
+	    while(tuple1 != null) {
+		    while (child2.hasNext()) {
+			    Tuple tuple2 = child2.next();
+			    
+			    if (getJoinPredicate().filter(tuple1, tuple2)) {
+				    Tuple tuple = new Tuple(getTupleDesc());
+				    
+				    int i = 0;
+				    Iterator<Field> fields = tuple1.fields();
+				    
+				    while (fields.hasNext()) {
+					    tuple.setField(i++, fields.next());
+				    }
+				    
+				    Iterator<Field> fields1 = tuple2.fields();
+				    
+				    while (fields1.hasNext()) {
+					    tuple.setField(i++, fields1.next());
+				    }
+				    
+				    return tuple;
+			    }
+		    }
+		    
+		    child2.rewind();
+		    if(!child1.hasNext())
+		    	break;
+		    
+		    tuple1 = child1.next();
+	    }
+	    return null;
     }
 
     @Override
