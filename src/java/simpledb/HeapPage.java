@@ -18,6 +18,9 @@ public class HeapPage implements Page {
     final byte header[];
     final Tuple tuples[];
     final int numSlots;
+    
+    //CHANGES
+    private boolean dirty = false;
 
     byte[] oldData;
     private final Byte oldDataLock=new Byte((byte)0);
@@ -243,9 +246,14 @@ public class HeapPage implements Page {
      *         already empty.
      * @param t The tuple to delete
      */
-    public void deleteTuple(Tuple t) throws DbException {
-        // some code goes here
-        // not necessary for lab1
+    public void deleteTuple(Tuple t) throws DbException { //CHANGES
+        RecordId rid = t.getRecordId();
+        int tupleNbr = rid.getTupleNumber();
+        if(!isSlotUsed(tupleNbr) || !rid.getPageId().equals(pid))
+            throw new DbException("Couldn't delete tuple");
+        
+        tuples[tupleNbr] = null;
+        markSlotUsed(tupleNbr, false);
     }
 
     /**
@@ -255,18 +263,26 @@ public class HeapPage implements Page {
      *         is mismatch.
      * @param t The tuple to add.
      */
-    public void insertTuple(Tuple t) throws DbException {
-        // some code goes here
-        // not necessary for lab1
+    public void insertTuple(Tuple t) throws DbException { //CHANGES
+        if(getNumEmptySlots() == 0)
+            throw new DbException("Couldn't insert Tuple, no empty slot available");
+        
+        for (int i=0; i< numSlots; i++) {
+            if(!isSlotUsed(i)) {
+                markSlotUsed(i, true);
+                t.setRecordId(new RecordId(pid, i));
+                tuples[i] = t;
+                break;
+            }
+        }
     }
 
     /**
      * Marks this page as dirty/not dirty and record that transaction
      * that did the dirtying
      */
-    public void markDirty(boolean dirty, TransactionId tid) {
-        // some code goes here
-	// not necessary for lab1
+    public void markDirty(boolean dirty, TransactionId tid) { //CHANGES
+        this.dirty = dirty;
     }
 
     /**
@@ -301,9 +317,11 @@ public class HeapPage implements Page {
     /**
      * Abstraction to fill or clear a slot on this page.
      */
-    private void markSlotUsed(int i, boolean value) {
-        // some code goes here
-        // not necessary for lab1
+    private void markSlotUsed(int i, boolean value) { //CHANGES
+        if (value)
+            this.header[i / 8] |= (1 << (i % 8));
+        else
+            this.header[i / 8] &= ~(1 << (i % 8));
     }
 
     /**
